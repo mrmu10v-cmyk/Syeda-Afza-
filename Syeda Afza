@@ -1,0 +1,544 @@
+import React, { useState } from 'react';
+import { Heart, BookOpen, CheckSquare, Image, Plus, X, Edit2, Trash2, Save, Upload, FileText, Download, PaperclipIcon } from 'lucide-react';
+
+export default function StudyHelper() {
+  const [activeTab, setActiveTab] = useState('assignments');
+  
+  // Assignments state with file upload support
+  const [assignments, setAssignments] = useState([
+    { 
+      id: 1, 
+      title: 'Math Homework', 
+      subject: 'Mathematics', 
+      dueDate: '2025-11-05', 
+      priority: 'high', 
+      status: 'not-started',
+      description: 'Complete chapter 5 exercises',
+      attachments: [],
+      submissions: []
+    }
+  ]);
+  const [showAssignmentForm, setShowAssignmentForm] = useState(false);
+  const [newAssignment, setNewAssignment] = useState({
+    title: '', subject: '', dueDate: '', priority: 'medium', status: 'not-started', description: ''
+  });
+  const [uploadingFor, setUploadingFor] = useState(null);
+
+  // Notes state
+  const [notes, setNotes] = useState([
+    { id: 1, title: 'Chemistry Notes', subject: 'Chemistry', content: 'Remember: H2O is water!', color: 'bg-pink-100' }
+  ]);
+  const [showNoteForm, setShowNoteForm] = useState(false);
+  const [newNote, setNewNote] = useState({ title: '', subject: '', content: '', color: 'bg-pink-100' });
+
+  // Memories state
+  const [memories, setMemories] = useState([
+    { id: 1, title: 'Our First Date', description: 'Best day ever! 💕', date: '2024-06-15', emoji: '🌸' }
+  ]);
+  const [showMemoryForm, setShowMemoryForm] = useState(false);
+  const [newMemory, setNewMemory] = useState({ title: '', description: '', date: '', emoji: '💕' });
+
+  // Add Assignment
+  const addAssignment = () => {
+    if (newAssignment.title) {
+      setAssignments([...assignments, { 
+        ...newAssignment, 
+        id: Date.now(),
+        attachments: [],
+        submissions: []
+      }]);
+      setNewAssignment({ title: '', subject: '', dueDate: '', priority: 'medium', status: 'not-started', description: '' });
+      setShowAssignmentForm(false);
+    }
+  };
+
+  // Delete Assignment
+  const deleteAssignment = (id) => {
+    setAssignments(assignments.filter(a => a.id !== id));
+  };
+
+  // Update Assignment Status
+  const updateAssignmentStatus = (id, status) => {
+    setAssignments(assignments.map(a => a.id === id ? { ...a, status } : a));
+  };
+
+  // Handle File Upload (Simulated)
+  const handleFileUpload = (assignmentId, event, type) => {
+    const files = Array.from(event.target.files);
+    const fileData = files.map(file => ({
+      name: file.name,
+      size: (file.size / 1024).toFixed(2) + ' KB',
+      type: file.type,
+      uploadDate: new Date().toLocaleDateString(),
+      id: Date.now() + Math.random()
+    }));
+
+    setAssignments(assignments.map(a => {
+      if (a.id === assignmentId) {
+        if (type === 'attachment') {
+          return { ...a, attachments: [...a.attachments, ...fileData] };
+        } else {
+          return { ...a, submissions: [...a.submissions, ...fileData], status: 'completed' };
+        }
+      }
+      return a;
+    }));
+  };
+
+  // Delete File
+  const deleteFile = (assignmentId, fileId, type) => {
+    setAssignments(assignments.map(a => {
+      if (a.id === assignmentId) {
+        if (type === 'attachment') {
+          return { ...a, attachments: a.attachments.filter(f => f.id !== fileId) };
+        } else {
+          return { ...a, submissions: a.submissions.filter(f => f.id !== fileId) };
+        }
+      }
+      return a;
+    }));
+  };
+
+  // Add Note
+  const addNote = () => {
+    if (newNote.title) {
+      setNotes([...notes, { ...newNote, id: Date.now() }]);
+      setNewNote({ title: '', subject: '', content: '', color: 'bg-pink-100' });
+      setShowNoteForm(false);
+    }
+  };
+
+  // Delete Note
+  const deleteNote = (id) => {
+    setNotes(notes.filter(n => n.id !== id));
+  };
+
+  // Add Memory
+  const addMemory = () => {
+    if (newMemory.title) {
+      setMemories([...memories, { ...newMemory, id: Date.now() }]);
+      setNewMemory({ title: '', description: '', date: '', emoji: '💕' });
+      setShowMemoryForm(false);
+    }
+  };
+
+  // Delete Memory
+  const deleteMemory = (id) => {
+    setMemories(memories.filter(m => m.id !== id));
+  };
+
+  const noteColors = [
+    'bg-pink-100', 'bg-purple-100', 'bg-blue-100', 'bg-green-100', 
+    'bg-yellow-100', 'bg-orange-100', 'bg-red-100'
+  ];
+
+  const priorityColors = {
+    high: 'bg-red-200 text-red-800',
+    medium: 'bg-yellow-200 text-yellow-800',
+    low: 'bg-green-200 text-green-800'
+  };
+
+  const statusColors = {
+    'not-started': 'bg-gray-200 text-gray-700',
+    'in-progress': 'bg-blue-200 text-blue-700',
+    'completed': 'bg-green-300 text-green-800'
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-3xl shadow-2xl p-6 mb-6 text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
+            Syeda Afza's Study Hub 💕
+          </h1>
+          <p className="text-gray-600">Your personal learning management system with love!</p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          <button
+            onClick={() => setActiveTab('assignments')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold transition-all ${
+              activeTab === 'assignments' 
+                ? 'bg-gradient-to-r from-pink-400 to-pink-500 text-white shadow-lg scale-105' 
+                : 'bg-white text-gray-700 hover:bg-pink-100'
+            }`}
+          >
+            <CheckSquare size={20} />
+            Assignments
+          </button>
+          <button
+            onClick={() => setActiveTab('notes')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold transition-all ${
+              activeTab === 'notes' 
+                ? 'bg-gradient-to-r from-purple-400 to-purple-500 text-white shadow-lg scale-105' 
+                : 'bg-white text-gray-700 hover:bg-purple-100'
+            }`}
+          >
+            <BookOpen size={20} />
+            Notes
+          </button>
+          <button
+            onClick={() => setActiveTab('memories')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold transition-all ${
+              activeTab === 'memories' 
+                ? 'bg-gradient-to-r from-red-400 to-pink-400 text-white shadow-lg scale-105' 
+                : 'bg-white text-gray-700 hover:bg-red-100'
+            }`}
+          >
+            <Heart size={20} />
+            Our Memories
+          </button>
+        </div>
+
+        {/* Assignments Tab */}
+        {activeTab === 'assignments' && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setShowAssignmentForm(!showAssignmentForm)}
+              className="w-full bg-gradient-to-r from-pink-400 to-pink-500 text-white py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+            >
+              <Plus size={20} />
+              Add New Assignment
+            </button>
+
+            {showAssignmentForm && (
+              <div className="bg-white rounded-2xl p-6 shadow-xl">
+                <input
+                  type="text"
+                  placeholder="Assignment Title"
+                  value={newAssignment.title}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 focus:outline-none focus:border-pink-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Subject"
+                  value={newAssignment.subject}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, subject: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 focus:outline-none focus:border-pink-500"
+                />
+                <textarea
+                  placeholder="Assignment Description"
+                  value={newAssignment.description}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 h-24 focus:outline-none focus:border-pink-500"
+                />
+                <input
+                  type="date"
+                  value={newAssignment.dueDate}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 focus:outline-none focus:border-pink-500"
+                />
+                <select
+                  value={newAssignment.priority}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, priority: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 focus:outline-none focus:border-pink-500"
+                >
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
+                </select>
+                <button
+                  onClick={addAssignment}
+                  className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                >
+                  Save Assignment
+                </button>
+              </div>
+            )}
+
+            <div className="grid gap-4">
+              {assignments.map(assignment => (
+                <div key={assignment.id} className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-800">{assignment.title}</h3>
+                      <p className="text-sm text-gray-600">{assignment.subject}</p>
+                      {assignment.description && (
+                        <p className="text-sm text-gray-500 mt-1">{assignment.description}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => deleteAssignment(assignment.id)}
+                      className="text-red-500 hover:bg-red-100 p-2 rounded-lg"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${priorityColors[assignment.priority]}`}>
+                      {assignment.priority.toUpperCase()}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-purple-200 text-purple-800">
+                      Due: {assignment.dueDate}
+                    </span>
+                    {assignment.submissions.length > 0 && (
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-200 text-green-800">
+                        ✓ Submitted
+                      </span>
+                    )}
+                  </div>
+
+                  <select
+                    value={assignment.status}
+                    onChange={(e) => updateAssignmentStatus(assignment.id, e.target.value)}
+                    className={`w-full p-2 rounded-lg font-semibold mb-3 ${statusColors[assignment.status]}`}
+                  >
+                    <option value="not-started">Not Started</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed ✓</option>
+                  </select>
+
+                  {/* Assignment Files Section */}
+                  <div className="border-t-2 border-gray-100 pt-3 mt-3">
+                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <FileText size={16} />
+                      Assignment Files & Resources
+                    </h4>
+                    
+                    {assignment.attachments.length > 0 ? (
+                      <div className="space-y-2 mb-3">
+                        {assignment.attachments.map(file => (
+                          <div key={file.id} className="flex items-center justify-between bg-blue-50 p-2 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <PaperclipIcon size={16} className="text-blue-600" />
+                              <div>
+                                <p className="text-sm font-medium text-gray-800">{file.name}</p>
+                                <p className="text-xs text-gray-500">{file.size} • {file.uploadDate}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => deleteFile(assignment.id, file.id, 'attachment')}
+                              className="text-red-500 hover:bg-red-100 p-1 rounded"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400 mb-2">No files attached yet</p>
+                    )}
+
+                    <label className="block">
+                      <input
+                        type="file"
+                        multiple
+                        onChange={(e) => handleFileUpload(assignment.id, e, 'attachment')}
+                        className="hidden"
+                        id={`attach-${assignment.id}`}
+                      />
+                      <label
+                        htmlFor={`attach-${assignment.id}`}
+                        className="cursor-pointer flex items-center justify-center gap-2 w-full bg-blue-100 text-blue-700 py-2 rounded-lg font-semibold hover:bg-blue-200 transition-all"
+                      >
+                        <Upload size={16} />
+                        Upload Assignment Files
+                      </label>
+                    </label>
+                  </div>
+
+                  {/* Submission Section */}
+                  <div className="border-t-2 border-gray-100 pt-3 mt-3">
+                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <CheckSquare size={16} />
+                      Your Submissions
+                    </h4>
+                    
+                    {assignment.submissions.length > 0 ? (
+                      <div className="space-y-2 mb-3">
+                        {assignment.submissions.map(file => (
+                          <div key={file.id} className="flex items-center justify-between bg-green-50 p-2 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <FileText size={16} className="text-green-600" />
+                              <div>
+                                <p className="text-sm font-medium text-gray-800">{file.name}</p>
+                                <p className="text-xs text-gray-500">{file.size} • Submitted: {file.uploadDate}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => deleteFile(assignment.id, file.id, 'submission')}
+                              className="text-red-500 hover:bg-red-100 p-1 rounded"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400 mb-2">No submissions yet</p>
+                    )}
+
+                    <label className="block">
+                      <input
+                        type="file"
+                        multiple
+                        onChange={(e) => handleFileUpload(assignment.id, e, 'submission')}
+                        className="hidden"
+                        id={`submit-${assignment.id}`}
+                      />
+                      <label
+                        htmlFor={`submit-${assignment.id}`}
+                        className="cursor-pointer flex items-center justify-center gap-2 w-full bg-gradient-to-r from-green-400 to-green-500 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+                      >
+                        <Upload size={16} />
+                        Submit Your Solution
+                      </label>
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Notes Tab */}
+        {activeTab === 'notes' && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setShowNoteForm(!showNoteForm)}
+              className="w-full bg-gradient-to-r from-purple-400 to-purple-500 text-white py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+            >
+              <Plus size={20} />
+              Add New Note
+            </button>
+
+            {showNoteForm && (
+              <div className="bg-white rounded-2xl p-6 shadow-xl">
+                <input
+                  type="text"
+                  placeholder="Note Title"
+                  value={newNote.title}
+                  onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
+                  className="w-full p-3 border-2 border-purple-300 rounded-xl mb-3 focus:outline-none focus:border-purple-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Subject"
+                  value={newNote.subject}
+                  onChange={(e) => setNewNote({ ...newNote, subject: e.target.value })}
+                  className="w-full p-3 border-2 border-purple-300 rounded-xl mb-3 focus:outline-none focus:border-purple-500"
+                />
+                <textarea
+                  placeholder="Note Content"
+                  value={newNote.content}
+                  onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                  className="w-full p-3 border-2 border-purple-300 rounded-xl mb-3 h-32 focus:outline-none focus:border-purple-500"
+                />
+                <div className="flex gap-2 mb-3">
+                  {noteColors.map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setNewNote({ ...newNote, color })}
+                      className={`w-10 h-10 rounded-full ${color} ${newNote.color === color ? 'ring-4 ring-purple-500' : ''}`}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={addNote}
+                  className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                >
+                  Save Note
+                </button>
+              </div>
+            )}
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {notes.map(note => (
+                <div key={note.id} className={`${note.color} rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-bold text-gray-800">{note.title}</h3>
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="text-red-500 hover:bg-red-200 p-1 rounded-lg"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">{note.subject}</p>
+                  <p className="text-gray-700 whitespace-pre-wrap">{note.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Memories Tab */}
+        {activeTab === 'memories' && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setShowMemoryForm(!showMemoryForm)}
+              className="w-full bg-gradient-to-r from-red-400 to-pink-400 text-white py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+            >
+              <Plus size={20} />
+              Add New Memory
+            </button>
+
+            {showMemoryForm && (
+              <div className="bg-white rounded-2xl p-6 shadow-xl">
+                <input
+                  type="text"
+                  placeholder="Memory Title"
+                  value={newMemory.title}
+                  onChange={(e) => setNewMemory({ ...newMemory, title: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 focus:outline-none focus:border-pink-500"
+                />
+                <textarea
+                  placeholder="Description"
+                  value={newMemory.description}
+                  onChange={(e) => setNewMemory({ ...newMemory, description: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 h-24 focus:outline-none focus:border-pink-500"
+                />
+                <input
+                  type="date"
+                  value={newMemory.date}
+                  onChange={(e) => setNewMemory({ ...newMemory, date: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 focus:outline-none focus:border-pink-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Emoji (e.g., 💕, 🌸, ✨)"
+                  value={newMemory.emoji}
+                  onChange={(e) => setNewMemory({ ...newMemory, emoji: e.target.value })}
+                  className="w-full p-3 border-2 border-pink-300 rounded-xl mb-3 focus:outline-none focus:border-pink-500"
+                />
+                <button
+                  onClick={addMemory}
+                  className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                >
+                  Save Memory
+                </button>
+              </div>
+            )}
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {memories.map(memory => (
+                <div key={memory.id} className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-4xl">{memory.emoji}</span>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800">{memory.title}</h3>
+                        <p className="text-sm text-gray-600">{memory.date}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => deleteMemory(memory.id)}
+                      className="text-red-500 hover:bg-red-200 p-2 rounded-lg"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  <p className="text-gray-700">{memory.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
